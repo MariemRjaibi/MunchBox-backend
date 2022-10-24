@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
+const fetch = require('node-fetch');
+
+const APP_API_KEY = process.env.APP_API_KEY;
+
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+
 
 module.exports = router;
