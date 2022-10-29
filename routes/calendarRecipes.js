@@ -9,8 +9,6 @@ router.post("/", (req, res) => {
   Calendar.findOne({ title: req.body.title }).then((data) => {
     if (data === null) {
       const newRecipe = new Calendar({
-        //userId: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
-        //I don't know how to do this
         title: req.body.title,
         image: req.body.image,
         ingredients: req.body.ingredients,
