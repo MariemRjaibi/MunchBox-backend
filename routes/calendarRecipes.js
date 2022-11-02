@@ -3,6 +3,7 @@ var router = express.Router();
 
 require("../models/connection");
 const Calendar = require("../models/calendarRecipes");
+const User = require("../models/users");
 
 // Check if the recipe is already added and create new one
 router.post("/", (req, res) => {
@@ -18,7 +19,16 @@ router.post("/", (req, res) => {
       });
 
       newRecipe.save().then((newDoc) => {
-        res.json({ result: true, Recipe: newDoc });
+        console.log(newDoc);
+        User.updateOne(
+          { token: req.body.token },
+          { $push: { recipes: newDoc._id } }
+        )
+          .then((updateDoc) => {
+            //   console.log(updateDoc);
+            res.json({ result: true, Recipe: newDoc });
+          })
+          .catch((error) => console.log(error));
       });
     } else {
       // Recipe already exists in database
@@ -32,22 +42,40 @@ router.post("/", (req, res) => {
 
 //to get calendar recipes
 
-router.get("/", (req, res) => {
-  User.find({ name: req.body.name })
-    .populate("calendarRecipes")
+router.get("/:token", (req, res) => {
+  User.findOne({ token: req.params.token })
+    .populate("recipes")
     .then((recipes) => {
-      if (recipes.length > 0) {
-        res.json({ result: true, recipes });
+      console.log("token ======>", req.params.token);
+      console.log("heeeeeeeeee ======>", recipes);
+      if (recipes.recipes.length > 0) {
+        res.json({ result: true, recipes: recipes.recipes });
       } else {
         res.json({ result: false, error: "No recipe added yet" });
       }
     });
 });
 
+// router.put("/", (req, res) => {
+//   Calendar.updateOne(
+//     { title: req.body.title },
+//     { $push: { date: req.body.date } }
+//   ).then((data) => {
+//     res.json({ result: true, newDoc: data });
+//   });
+// });
+
 //to delete a recipe
-router.delete("/recipeId", (req, res) => {
+router.delete("/:recipeId", (req, res) => {
   Calendar.deleteOne({ _id: req.params.recipeId }).then(({ deletedCount }) => {
     res.json({ result: deletedCount > 0, recipes });
+  });
+});
+
+//update the recipe with a date
+router.put("/", (req, res) => {
+  Calendar.updateOne({ title: req.body.title }).then((data) => {
+    res.json({ result: modifiedCount > 0 });
   });
 });
 
