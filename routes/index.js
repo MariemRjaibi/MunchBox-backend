@@ -3,7 +3,7 @@ var router = express.Router();
 
 const fetch = require('node-fetch');
 
-const APP_API_KEY = process.env.APP_API_KEY;
+const API_KEY = process.env.API_KEY;
 
 /* GET home page. */
 
