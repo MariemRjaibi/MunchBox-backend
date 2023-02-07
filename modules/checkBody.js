@@ -1,3 +1,6 @@
+
+// this function checks whether the inputs are empty or not valid
+
 function checkBody(body, keys) {
     let isValid = true;
   

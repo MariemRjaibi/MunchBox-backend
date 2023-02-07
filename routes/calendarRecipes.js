@@ -5,10 +5,10 @@ require("../models/connection");
 const Calendar = require("../models/calendarRecipes");
 const User = require("../models/users");
 
-// Check if the recipe is already added and create new one
+// Check if the recipe has been already added and create new one
 router.post("/", (req, res) => {
   Calendar.findOne({ title: req.body.title }).then((data) => {
-    if (data === null) {
+    if (!data) {
       const newRecipe = new Calendar({
         title: req.body.title,
         image: req.body.image,
@@ -19,13 +19,11 @@ router.post("/", (req, res) => {
       });
 
       newRecipe.save().then((newDoc) => {
-        console.log(newDoc);
         User.updateOne(
           { token: req.body.token },
           { $push: { recipes: newDoc._id } }
         )
-          .then((updateDoc) => {
-            //   console.log(updateDoc);
+          .then(() => {
             res.json({ result: true, Recipe: newDoc });
           })
           .catch((error) => console.log(error));
@@ -40,21 +38,28 @@ router.post("/", (req, res) => {
   });
 });
 
-//to get calendar recipes
+//to get calendar recipes and display them on calendar Recipes screen
 
 router.get("/:token", (req, res) => {
   User.findOne({ token: req.params.token })
     .populate("recipes")
-    .then((recipes) => {
-      console.log("token ======>", req.params.token);
-      console.log("heeeeeeeeee ======>", recipes);
-      if (recipes.recipes.length > 0) {
-        res.json({ result: true, recipes: recipes.recipes });
+    .then((data) => {
+      if (data.recipes.length > 0) {
+        res.json({ result: true, recipes: data.recipes });
       } else {
         res.json({ result: false, error: "No recipe added yet" });
       }
     });
 });
+
+//to delete a recipe in  calendar Recipes screen
+router.delete("/:recipeId", (req, res) => {
+  Calendar.deleteOne({ _id: req.params.recipeId }).then(({ deletedCount }) => {
+    res.json({ result: deletedCount > 0, recipes });
+  });
+});
+
+module.exports = router;
 
 // router.put("/", (req, res) => {
 //   Calendar.updateOne(
@@ -65,18 +70,9 @@ router.get("/:token", (req, res) => {
 //   });
 // });
 
-//to delete a recipe
-router.delete("/:recipeId", (req, res) => {
-  Calendar.deleteOne({ _id: req.params.recipeId }).then(({ deletedCount }) => {
-    res.json({ result: deletedCount > 0, recipes });
-  });
-});
-
 //update the recipe with a date
-router.put("/", (req, res) => {
-  Calendar.updateOne({ title: req.body.title }).then((data) => {
-    res.json({ result: modifiedCount > 0 });
-  });
-});
-
-module.exports = router;
+// router.put("/", (req, res) => {
+//   Calendar.updateOne({ title: req.body.title }).then((data) => {
+//     res.json({ result: modifiedCount > 0 });
+//   });
+// });

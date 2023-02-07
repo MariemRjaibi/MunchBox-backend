@@ -1,25 +1,21 @@
 var express = require("express");
 var router = express.Router();
-
 require("../models/connection");
 const User = require("../models/users");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
-const Calendar = require("../models/calendarRecipes");
 
-// Check if the user has not already been registered
+
 router.post("/signup", (req, res) => {
   if (!checkBody(req.body, ["username", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-  // console.log ('checkBody', result)
-
+// Check if the user has not already been registered
   User.findOne({ username: req.body.username }).then((data) => {
-    if (data === null) {
+    if (!data) {
       const hash = bcrypt.hashSync(req.body.password, 10);
-
       const newUser = new User({
         username: req.body.username,
         email: req.body.email,
@@ -28,7 +24,6 @@ router.post("/signup", (req, res) => {
       });
 
       newUser.save().then((newDoc) => {
-        //console.log(newDoc);
         res.json({ result: true, token: newDoc.token });
       });
     } else {
@@ -37,6 +32,9 @@ router.post("/signup", (req, res) => {
     }
   });
 });
+
+
+
 
 //Sign-in
 router.post("/signin", (req, res) => {
